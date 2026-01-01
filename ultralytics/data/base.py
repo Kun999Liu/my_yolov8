@@ -15,7 +15,7 @@ from torch.utils.data import Dataset
 
 from ultralytics.data.utils import FORMATS_HELP_MSG, HELP_URL, IMG_FORMATS
 from ultralytics.utils import DEFAULT_CFG, LOCAL_RANK, LOGGER, NUM_THREADS, TQDM
-from ultralytics.utils.tif import readTif
+from ultralytics.data.utils import read_image
 
 
 class BaseDataset(Dataset):
@@ -47,20 +47,20 @@ class BaseDataset(Dataset):
     """
 
     def __init__(
-        self,
-        img_path,
-        imgsz=640,
-        cache=False,
-        augment=True,
-        hyp=DEFAULT_CFG,
-        prefix="",
-        rect=False,
-        batch_size=16,
-        stride=32,
-        pad=0.5,
-        single_cls=False,
-        classes=None,
-        fraction=1.0,
+            self,
+            img_path,
+            imgsz=640,
+            cache=False,
+            augment=True,
+            hyp=DEFAULT_CFG,
+            prefix="",
+            rect=False,
+            batch_size=16,
+            stride=32,
+            pad=0.5,
+            single_cls=False,
+            classes=None,
+            fraction=1.0,
     ):
         """Initialize BaseDataset with given configuration and options."""
         super().__init__()
@@ -95,6 +95,7 @@ class BaseDataset(Dataset):
 
         # Transforms
         self.transforms = self.build_transforms(hyp=hyp)
+        self.mode = "tif"
 
     def get_img_files(self, img_path):
         """Read image files."""
@@ -145,7 +146,7 @@ class BaseDataset(Dataset):
         """Loads 1 image from dataset index 'i', returns (im, resized hw)."""
         im, f, fn = self.ims[i], self.im_files[i], self.npy_files[i]
         if im is None:  # not cached in RAM
-            if fn.exists():  # load npy
+            if fn.exists() and self.mode == "npy":  # load npy
                 try:
                     im = np.load(fn)
                 except Exception as e:
@@ -154,7 +155,7 @@ class BaseDataset(Dataset):
                     im = cv2.imread(f)  # BGR
             else:  # read image
                 # im = cv2.imread(f)  # BGR
-                im = readTif(f)
+                im = read_image(f, "tif")
             if im is None:
                 raise FileNotFoundError(f"Image Not Found {f}")
 
@@ -210,7 +211,7 @@ class BaseDataset(Dataset):
         for _ in range(n):
             im = cv2.imread(random.choice(self.im_files))  # sample image
             ratio = self.imgsz / max(im.shape[0], im.shape[1])  # max(h, w)  # ratio
-            b += im.nbytes * ratio**2
+            b += im.nbytes * ratio ** 2
         mem_required = b * self.ni / n * (1 + safety_margin)  # GB required to cache dataset into RAM
         mem = psutil.virtual_memory()
         success = mem_required < mem.available  # to cache or not to cache, that is the question

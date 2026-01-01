@@ -151,7 +151,10 @@ class DetectionValidator(BaseValidator):
             if nl:
                 stat["tp"] = self._process_batch(predn, bbox, cls)
                 if self.args.plots:
-                    self.confusion_matrix.process_batch(predn, bbox, cls)
+                    '''修改代码  用于混淆举证'''
+                    file_path = f'{Path(batch["im_file"][si]).stem}.txt'
+                    self.confusion_matrix.process_batch(predn, bbox, cls, file_dir=self.save_dir, file_name=file_path)
+                    # self.confusion_matrix.process_batch(predn, bbox, cls)
             for k in self.stats.keys():
                 self.stats[k].append(stat[k])
 

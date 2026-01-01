@@ -13,7 +13,7 @@ from torch.utils.data import ConcatDataset
 
 from ultralytics.utils import LOCAL_RANK, NUM_THREADS, TQDM, colorstr
 from ultralytics.utils.ops import resample_segments
-
+from ultralytics.data.utils import read_image
 from .augment import (
     Compose,
     Format,
@@ -457,7 +457,7 @@ class ClassificationDataset:
             im = np.load(fn)
         else:  # read image
             # im = cv2.imread(f)  # BGR
-            im = readTif(f)
+            im = read_image(f,"tif")
         # Convert NumPy array to PIL image
         im = Image.fromarray(cv2.cvtColor(im, cv2.COLOR_BGR2RGB))
         sample = self.torch_transforms(im)

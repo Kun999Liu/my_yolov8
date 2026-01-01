@@ -12,11 +12,11 @@ import numpy as np
 import requests
 import torch
 from PIL import Image
+from osgeo import gdal
 
-from ultralytics.data.utils import FORMATS_HELP_MSG, IMG_FORMATS, VID_FORMATS
+from ultralytics.data.utils import FORMATS_HELP_MSG, IMG_FORMATS, VID_FORMATS, read_image
 from ultralytics.utils import IS_COLAB, IS_KAGGLE, LOGGER, ops
 from ultralytics.utils.checks import check_requirements
-from ultralytics.utils.tif import readTif
 
 
 @dataclass
@@ -361,7 +361,7 @@ class LoadImagesAndVideos:
             else:
                 self.mode = "image"
                 # im0 = cv2.imread(path)  # BGR
-                im0 = readTif(path)
+                im0 = read_image(path, "tif")
                 if im0 is None:
                     raise FileNotFoundError(f"Image Not Found {path}")
                 paths.append(path)
