@@ -657,9 +657,6 @@ class RandomHSV:
         img = labels["img"]
         if self.hgain or self.sgain or self.vgain:
             r = np.random.uniform(-1, 1, 3) * [self.hgain, self.sgain, self.vgain] + 1  # random gains
-            # 如果是 float64，强制转为 float32
-            if img.dtype == np.float64:
-                img = img.astype(np.float32)
             hue, sat, val = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
             dtype = img.dtype  # uint8
 

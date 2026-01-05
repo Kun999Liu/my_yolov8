@@ -8,13 +8,13 @@ if __name__ == '__main__':
         task="detect",
         device="0",
         imgsz=256,
-        epochs=1,
-        name="test_dataloader",
+        epochs=200,
+        patience=50,
+        workers=8,
+        batch=16,
+        name="TransmissionTower_BGR_yolov8m_2m",
         amp=False,  # 禁用半精度训练
         pretrained=False,  # 禁用官方权重
-        hsv_h = 0.0,  # 色调增强 (Hue) -> 设为 0
-        hsv_s = 0.0,  # 饱和度增强 (Saturation) -> 设为 0
-        hsv_v = 0.0  # 亮度/明度增强 (Value) -> 设为 0
     )
 
     # Resume training

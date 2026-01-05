@@ -123,7 +123,7 @@ def readTif(img_file_path, bands=3):
     im_bands = dataset.RasterCount  # 波段数
     # print(im_bands)
     # 直接读取dataset
-    img_array = dataset.ReadAsArray()
+    img_array = dataset.ReadAsArray().astype(np.float32)
     if img_array is None:
         raise ValueError(f"ReadAsArray failed for {img_file_path}")
     # 归一化
@@ -138,11 +138,11 @@ def readTif(img_file_path, bands=3):
 
     # --- 【关键修改】使用 2% 拉伸替代 Min-Max ---
     # 这一步能显著增强金属目标的 Intensity 特征
-    # img = normalize_percentile(img_array)
+    img = normalize_percentile(img_array)
     '''校正后处理'''
-    imgScale = (img_array - np.min(img_array)) / (np.max(img_array) - np.min(img_array))
-
-    img = np.round(imgScale * 255).astype(np.uint8)
+    # imgScale = (img_array - np.min(img_array)) / (np.max(img_array) - np.min(img_array))
+    #
+    # img = np.round(imgScale * 255).astype(np.uint8)
     # # TIS GIU 使用
     img = np.transpose(img, (1, 2, 0))
     # img = histEqualize(img)

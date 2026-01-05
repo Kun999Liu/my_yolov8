@@ -137,7 +137,11 @@ class DetectionValidator(BaseValidator):
                     for k in self.stats.keys():
                         self.stats[k].append(stat[k])
                     if self.args.plots:
-                        self.confusion_matrix.process_batch(detections=None, gt_bboxes=bbox, gt_cls=cls)
+                        # self.confusion_matrix.process_batch(detections=None, gt_bboxes=bbox, gt_cls=cls)
+                        '''修改代码  用于混淆举证'''
+                        file_path = f'{Path(batch["im_file"][si]).stem}.txt'
+                        self.confusion_matrix.process_batch(predn, bbox, cls, file_dir=self.save_dir,
+                                                            file_name=file_path)
                 continue
 
             # Predictions
