@@ -51,7 +51,7 @@ from ultralytics.nn.modules import (
     RTDETRDecoder,
     Segment,
     Silence,
-    WorldDetect
+    WorldDetect, SpectralStem
 )
 from ultralytics.nn.modules.conv import Concat4
 from ultralytics.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, colorstr, emojis, yaml_load
@@ -915,6 +915,16 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             if m in {BottleneckCSP, C1, C2, C2f, C2fAttn, C3, C3TR, C3Ghost, C3x, RepC3}:
                 args.insert(2, n)  # number of repeats
                 n = 1
+        elif m is SpectralStem:
+            # 获取输入通道 c1 和配置中的输出通道 c2
+            c1, c2 = ch[f], args[0]
+            # 同样应用 width_multiple 进行通道缩放 (make_divisible)
+            # c2 = make_divisible(min(c2, max_channels) * width, 8)
+
+            # 构造 args: [c1, c2, k, s]
+            # YAML 里通常写 [64, 3, 2]，所以 args[1:] 对应 [3, 2]
+            # 最终 args = [c1, c2, 3, 2]
+            args = [c1, c2, *args[1:]]
         elif m is AIFI:
             args = [ch[f], *args]
         elif m in {HGStem, HGBlock}:

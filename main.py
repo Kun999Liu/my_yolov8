@@ -2,15 +2,15 @@ from ultralytics import YOLO
 import warnings
 warnings.filterwarnings('ignore')
 if __name__ == '__main__':
-    model = YOLO(r"F:\my_code\yolov8\ultralytics\cfg\models\v8\yolov8.yaml")
+    model = YOLO(r"D:\Git\my_yolov8\yolov8.yaml")
     model.train(
-        data=r"F:\my_code\yolov8\TransmissionTower.yaml",
+        data=r"D:\Git\my_yolov8\TransmissionTower.yaml",
         task="detect",
-        device="0",
+        device="cpu",
         imgsz=256,
-        epochs=200,
+        epochs=1,
         patience=50,
-        workers=8,
+        # workers=8,
         batch=16,
         name="TransmissionTower_BGR_yolov8m_2m",
         amp=False,  # 禁用半精度训练

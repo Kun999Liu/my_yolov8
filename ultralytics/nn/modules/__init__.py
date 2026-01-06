@@ -18,6 +18,7 @@ Example:
 """
 
 from .block import (
+SpectralStem,
     C1,
     C2,
     C3,
@@ -81,6 +82,7 @@ from .transformer import (
 )
 
 __all__ = (
+    "SpectralStem",
     "Conv",
     "Conv2",
     "LightConv",

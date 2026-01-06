@@ -11,6 +11,7 @@ from .conv import Conv, DWConv, GhostConv, LightConv, RepConv, autopad
 from .transformer import TransformerBlock
 
 __all__ = (
+    "SpectralStem",
     "DFL",
     "HGBlock",
     "HGStem",
@@ -42,7 +43,58 @@ __all__ = (
     "Silence",
 )
 
+class SpectralStem(nn.Module):
+    """
+    SpectralStem v2 (Corrected for B-G-R-NIR Order)
 
+    Input:  (B, 4, H, W)
+    Order:  [Index 0: Blue, Index 1: Green, Index 2: Red, Index 3: NIR]
+
+    Output: (B, c2, H/2, W/2) -> Standard YOLO stem output
+    """
+
+    def __init__(self, c1=4, c2=64, k=3, s=2):
+        super().__init__()
+        # 输入通道 = 原始4通道 + MNDBI(1) + Intensity(1) + NDVI(1) = 7通道
+        self.features_c = c1 + 3
+
+        # 定义卷积层
+        self.conv = Conv(self.features_c, c2, k, s)
+
+    def forward(self, x):
+        """
+        Args:
+            x (torch.Tensor): Input image batch of shape (B, 4, H, W).
+            EXPECTED ORDER: Blue, Green, Red, NIR
+        """
+        # 1. 按照 B-G-R-NIR 顺序拆分通道
+        # ---------------------------------------------------------
+        b = x[:, 0:1, :, :]  # Blue  (Index 0)
+        g = x[:, 1:2, :, :]  # Green (Index 1)
+        r = x[:, 2:3, :, :]  # Red   (Index 2)
+        nir = x[:, 3:4, :, :]  # NIR   (Index 3)
+        # ---------------------------------------------------------
+
+        epsilon = 1e-8  # 防止除零
+
+        # --- 特征 1: MNDBI 变体 (金属/建筑敏感) ---
+        # 公式: (NIR - Blue) / (NIR + Blue)
+        mndbi = (nir - b) / (nir + b + epsilon)
+
+        # --- 特征 2: 全波段强度 (高光/金属敏感) ---
+        # RMS Intensity
+        intensity = torch.sqrt((b ** 2 + g ** 2 + r ** 2 + nir ** 2) / 4.0 + epsilon)
+
+        # --- 特征 3: NDVI (植被抑制) ---
+        # 公式: (NIR - Red) / (NIR + Red)
+        ndvi = (nir - r) / (nir + r + epsilon)
+
+        # --- 特征融合 ---
+        # 将原始数据与3个物理指数拼接 -> 7通道输入
+        x_fused = torch.cat([x, mndbi, intensity, ndvi], dim=1)
+
+        # --- 卷积提取 ---
+        return self.conv(x_fused)
 class C1(nn.Module):
     def __init__(self, c2):
         super().__init__()
